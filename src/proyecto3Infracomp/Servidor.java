@@ -23,6 +23,7 @@ public class Servidor {
     private PrivateKey privateKey;
 
     public Servidor(int port, SecretKey key, PrivateKey privateKey) throws Exception {
+    	
         this.sharedKey = key;
         this.serverSocket = new ServerSocket(port);
         this.privateKey = privateKey;

@@ -50,7 +50,7 @@ public class Principal {
         }
         // Iniciar comunicación con los clientes
         for (Cliente cliente : clientes) {
-            cliente.enviarConsulta(123);
+            cliente.enviarConsulta(1234);
             System.out.println("Consulta enviada por el cliente.");
         }
 
