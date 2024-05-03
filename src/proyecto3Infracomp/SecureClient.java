@@ -34,6 +34,7 @@ public class SecureClient {
 	     out.writeUTF(query);
 	     String response = in.readUTF();
 	     System.out.println("Respuesta recibida: " + response);
+	     
 	 }
 
 	 public static void main(String[] args) {

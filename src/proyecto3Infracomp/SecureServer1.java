@@ -1,8 +1,4 @@
 package proyecto3Infracomp;
-
-
-
-
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.security.*;
@@ -23,6 +19,7 @@ public class SecureServer1 {
     public SecureServer1(int port) throws IOException {
         serverSocket = new ServerSocket(port);
     }
+
     public void start() throws IOException {
         System.out.println("Esperando cliente...");
         socket = serverSocket.accept();
@@ -30,15 +27,29 @@ public class SecureServer1 {
         out = new DataOutputStream(socket.getOutputStream());
         System.out.println("Cliente conectado.");
     }
+
     public void stop() throws IOException {
         in.close();
         out.close();
         socket.close();
         serverSocket.close();
     }
-    public void processQueries() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, SignatureException {
+
+    public void processQueries() {
         try {
-            String query = in.readUTF();
+            if (socket.isClosed()) {
+                System.err.println("La conexión está cerrada.");
+                return;
+            }
+
+            String query;
+            try {
+                query = in.readUTF();
+            } catch (EOFException e) {
+                System.err.println("ERROR: Fin inesperado del flujo de datos.");
+                return;
+            }
+
             byte[] encryptedQuery = Base64.getDecoder().decode(query);
             byte[] decryptedQuery, hmac, signature;
 
@@ -62,15 +73,18 @@ public class SecureServer1 {
             long endHmac = System.nanoTime();
             long hmacTime = endHmac - startHmac;
             System.out.println("Tiempo de verificación de HMAC: " + hmacTime + " nanosegundos");
+            System.out.println("Tiempo de generación de firma: " + signatureTime + " nanosegundos");
+            System.out.println("Tiempo de descifrado de consulta: " + decryptionTime + " nanosegundos");
+            System.out.println("Tiempo de verificación de HMAC: " + hmacTime + " nanosegundos");
 
             // Envío de datos y otras partes del código...
-        } catch (EOFException e) {
-            System.err.println("Se alcanzó el final del archivo de entrada (EOF) de manera inesperada. La conexión pudo haber sido cerrada por el cliente.");
-            e.printStackTrace();
-        } catch (Exception e) {
+        } catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException
+                | InvalidAlgorithmParameterException | InvalidKeyException
+                | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
     }
+
     public void generateEncryptionKeyAndIv() throws NoSuchAlgorithmException {
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         keyGen.init(256);
@@ -94,9 +108,9 @@ public class SecureServer1 {
         return mac.doFinal(data);
     }
 
-    public static void main(String[] args) throws NoSuchAlgorithmException {
+    public static void main(String[] args) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException, SignatureException {
         try {
-            SecureServer server = new SecureServer(8000);
+            SecureServer1 server = new SecureServer1(8001);
             // Generar la clave de cifrado y el vector de inicialización
             server.generateEncryptionKeyAndIv();
             server.start();

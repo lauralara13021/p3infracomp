@@ -1,5 +1,4 @@
 package proyecto3Infracomp;
-
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.security.*;
@@ -18,18 +17,15 @@ public class SecureClient1 {
     public SecureClient1(String host, int port) throws IOException {
         socket = new Socket(host, port);
         in = new DataInputStream(socket.getInputStream());
-        out = new DataOutputStream(socket.getOutputStream());
-    }
+        out = new DataOutputStream(socket.getOutputStream());}
 
     public void stop() throws IOException {
         in.close();
         out.close();
         socket.close();
     }
-
     public void sendQuery(String query) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, SignatureException {
         byte[] encryptedQuery, signature, decryptedResponse;
-
         // Verificar la firma
         long startVerification = System.nanoTime();
         encryptedQuery = encryptAES(query, encryptionKey, iv);
@@ -57,18 +53,15 @@ public class SecureClient1 {
         cipher.init(Cipher.ENCRYPT_MODE, key, iv);
         return cipher.doFinal(data.getBytes());
     }
-
     private static byte[] signData(byte[] data, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(privateKey);
         signature.update(data);
         return signature.sign();
     }
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, BadPaddingException, IllegalBlockSizeException, SignatureException {
         try {
-            SecureClient client = new SecureClient("localhost", 8000);
-
+            SecureClient1 client = new SecureClient1("localhost", 8001);
             // Envío de consultas y medición de tiempo
             long startQueryTime = System.nanoTime();
             client.sendQuery("10");
